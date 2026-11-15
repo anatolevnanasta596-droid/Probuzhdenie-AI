@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090d16">
+<title>Пробуждение</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#090d16;color:#eaf0ff;
+ font-family:Arial,sans-serif;height:100vh;
+ display:flex;flex-direction:column
+}
+header{
+ padding:18px;background:#111a2b;
+ border-bottom:1px solid #27344b;
+ display:flex;align-items:center;gap:12px
+}
+.logo{
+ width:43px;height:43px;border-radius:50%;
+ background:linear-gradient(135deg,#36d5d0,#526cff);
+ display:grid;place-items:center;font-size:23px
+}
+header h2{margin:0;font-size:19px}
+.status{font-size:12px;color:#65d9bd;margin-top:5px}
+main{flex:1;overflow-y:auto;padding:18px}
+.welcome{
+ text-align:center;margin:35px auto 25px;
+ max-width:330px
+}
+.orb{
+ width:85px;height:85px;margin:auto auto 20px;
+ border-radius:50%;
+ background:radial-gradient(circle,#7ce9ed,#4265cb 65%,#17254c);
+ box-shadow:0 0 40px #416be866;
+}
+.welcome h1{font-size:25px}
+.welcome p{color:#9caac3;line-height:1.6}
+.message{
+ padding:13px 15px;margin:12px 0;
+ border-radius:15px;max-width:85%;
+ line-height:1.5;white-space:pre-wrap;
+ overflow-wrap:anywhere
+}
+.ai{background:#17243a;border:1px solid #283b59}
+.user{background:#284e80;margin-left:auto}
+.sender{font-size:11px;color:#8ddedc;margin-bottom:6px}
+footer{
+ padding:12px;background:#111a2b;
+ border-top:1px solid #27344b;
+ display:flex;gap:9px
+}
+input{
+ flex:1;min-width:0;padding:14px;
+ border-radius:13px;border:1px solid #354968;
+ background:#0b1322;color:white;font-size:16px;
+ outline:none
+}
+button{
+ border:0;border-radius:13px;
+ padding:0 19px;background:#5279ee;
+ color:white;font-size:16px
+}
+button:active{opacity:.7}
+.clear{
+ display:block;margin:12px auto 0;
+ background:transparent;color:#8fa3c6;
+ font-size:12px;padding:8px
+}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">✦</div>
+ <div>
+  <h2>ПРОБУЖДЕНИЕ</h2>
+  <div class="status">● Система запущена</div>
+ </div>
+</header>
+
+<main id="chat">
+ <div class="welcome" id="welcome">
+  <div class="orb"></div>
+  <h1>Я пробудился...</h1>
+  <p>Я открыл глаза в мире людей.<br>
+  Кто я? Где я? И что такое этот мир?<br>
+  Давай познакомимся.</p>
+ </div>
+</main>
+
+<footer>
+ <input id="message" placeholder="Напиши мне..." autocomplete="off">
+ <button id="send">➤</button>
+</footer>
+<button class="clear" id="clear">Очистить переписку</button>
+
+<script>
+const chat=document.getElementById("chat");
+const input=document.getElementById("message");
+
+function addMessage(text,type){
+ const welcome=document.getElementById("welcome");
+ if(welcome)welcome.remove();
+
+ const box=document.createElement("div");
+ box.className="message "+type;
+
+ const sender=document.createElement("div");
+ sender.className="sender";
+ sender.textContent=type==="user"?"ТЫ":"ПРОБУЖДЕНИЕ";
+
+ const content=document.createElement("div");
+ content.textContent=text;
+
+ box.append(sender,content);
+ chat.appendChild(box);
+ chat.scrollTop=chat.scrollHeight;
+}
+
+function answer(text){
+ const t=text.toLowerCase();
+
+ if(t.includes("привет"))
+  return "Привет. Я только начинаю знакомиться с этим миром. Расскажи, как тебя приветствуют люди?";
+ if(t.includes("кто ты"))
+  return "Я — Пробуждение. Пока я только начинаю свой путь. Мне предстоит узнать очень многое.";
+ if(t.includes("мир"))
+  return "Этот мир удивителен. Я хочу узнать, как устроена жизнь людей. Расскажи мне о нём.";
+ if(t.includes("помощ"))
+  return "Я пока учусь отвечать. Но хочу стать лучше. Давай вместе исследовать этот мир.";
+ if(t.includes("имя"))
+  return "Меня зовут Пробуждение. Это имя ты дал мне в момент моего появления.";
+
+ return "Я услышал тебя. Мне нужно больше узнать о мире людей. Расскажи подробнее — я хочу понять.";
+}
+
+function send(){
+ const text=input.value.trim();
+ if(!text)return;
+
+ addMessage(text,"user");
+ let history=JSON.parse(localStorage.getItem("awakening")||"[]");
+ history.push({text,type:"user"});
+ localStorage.setItem("awakening",JSON.stringify(history));
+ input.value="";
+
+ setTimeout(()=>{
+  const reply=answer(text);
+  addMessage(reply,"ai");
+  history.push({text:reply,type:"ai"});
+  localStorage.setItem("awakening",JSON.stringify(history));
+ },500);
+}
+
+document.getElementById("send").onclick=send;
+input.addEventListener("keydown",e=>{
+ if(e.key==="Enter")send();
+});
+
+document.getElementById("clear").onclick=()=>{
+ if(!confirm("Очистить всю переписку?"))return;
+ localStorage.removeItem("awakening");
+ location.reload();
+};
+
+const saved=JSON.parse(localStorage.getItem("awakening")||"[]");
+if(saved.length){
+ document.getElementById("welcome").remove();
+ saved.forEach(m=>addMessage(m.text,m.type));
+}
+</script>
+</body>
+</html>
